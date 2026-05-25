@@ -139,8 +139,7 @@ export function ProfileForm({ profile, onAvatarChange }: ProfileFormProps) {
                       {uploadingPhoto ? "A enviar…" : "Escolher foto do computador"}
                     </Button>
                     <p className="text-xs text-muted-foreground mt-2">
-                      JPG, PNG ou WebP — máx. 5 MB. A foto é guardada no Supabase (bucket{" "}
-                      <strong>avatars</strong>).
+                      JPG, PNG ou WebP — máx. 5 MB.
                     </p>
                   </div>
                 </div>
@@ -165,7 +164,7 @@ export function ProfileForm({ profile, onAvatarChange }: ProfileFormProps) {
                 id="phone"
                 name="phone"
                 defaultValue={profile.phone ?? ""}
-                placeholder="+55 11 99999-9999"
+                placeholder="923092312"
               />
             </div>
             <Button type="submit" disabled={loading}>

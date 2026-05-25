@@ -65,7 +65,7 @@ export function CatalogPageClient() {
         </p>
         {isLoggedIn && (
           <p className="text-sm text-muted-foreground mt-1">
-            Marque cada livro: Quero Ler, Lendo ou Finalizados (apenas uma opção).
+           
           </p>
         )}
       </div>

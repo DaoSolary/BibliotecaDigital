@@ -40,7 +40,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Biblioteca Virtual. Todos os direitos reservados.
+          © {new Date().getFullYear()} ADSU - TEC. Todos os direitos reservados.
         </div>
       </div>
     </footer>

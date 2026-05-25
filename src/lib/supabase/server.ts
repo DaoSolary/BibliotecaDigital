@@ -2,13 +2,14 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { supabaseFetch } from "@/lib/supabase/fetch";
 import type { SupabaseCookie } from "@/lib/supabase/cookie-types";
+import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
 
 export async function createClient() {
   const cookieStore = await cookies();
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    getSupabaseUrl(),
+    getSupabaseAnonKey(),
     {
       global: { fetch: supabaseFetch },
       cookies: {
@@ -33,8 +34,8 @@ export async function createAdminClient() {
   const cookieStore = await cookies();
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    getSupabaseUrl(),
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? getSupabaseAnonKey(),
     {
       global: { fetch: supabaseFetch },
       cookies: {
