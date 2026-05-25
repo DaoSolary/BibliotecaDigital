@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import type { BookFilters, BookSortOption } from "@/types/database";
+import type { BookFilters } from "@/types/database";
 
 async function getAuthUser() {
   const supabase = await createClient();
@@ -10,21 +10,6 @@ async function getAuthUser() {
     data: { user },
   } = await supabase.auth.getUser();
   return { supabase, user };
-}
-
-function applySort(query: ReturnType<Awaited<ReturnType<typeof createClient>>["from"]>, sort?: BookSortOption) {
-  switch (sort) {
-    case "title_desc":
-      return query.order("title", { ascending: false });
-    case "author_asc":
-      return query.order("author", { ascending: true });
-    case "newest":
-      return query.order("created_at", { ascending: false });
-    case "popular":
-      return query.order("read_count", { ascending: false });
-    default:
-      return query.order("title", { ascending: true });
-  }
 }
 
 export async function getBooks(filters: BookFilters = {}) {
@@ -41,7 +26,23 @@ export async function getBooks(filters: BookFilters = {}) {
   if (filters.category) query = query.eq("category_id", filters.category);
   if (filters.featured) query = query.eq("is_featured", true);
 
-  query = applySort(query, filters.sort);
+  switch (filters.sort) {
+    case "title_desc":
+      query = query.order("title", { ascending: false });
+      break;
+    case "author_asc":
+      query = query.order("author", { ascending: true });
+      break;
+    case "newest":
+      query = query.order("created_at", { ascending: false });
+      break;
+    case "popular":
+      query = query.order("read_count", { ascending: false });
+      break;
+    default:
+      query = query.order("title", { ascending: true });
+  }
+
   const { data, error } = await query;
   if (error) throw new Error(error.message);
   return data ?? [];

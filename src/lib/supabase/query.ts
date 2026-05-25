@@ -1,6 +1,6 @@
 /** Evita páginas presas quando o Supabase demora ou está offline */
 export async function comTimeout<T>(
-  promessa: Promise<T>,
+  promessa: PromiseLike<T>,
   ms = 6000
 ): Promise<{ data: T | null; timedOut: boolean }> {
   let timeoutId: ReturnType<typeof setTimeout>;

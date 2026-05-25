@@ -1,12 +1,25 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PdfReader } from "@/components/reader/pdf-reader";
 import { createClient } from "@/lib/supabase/client";
+
+const PdfReader = dynamic(
+  () => import("@/components/reader/pdf-reader-view").then((m) => m.PdfReader),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-screen flex-col items-center justify-center gap-3 bg-background">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <p className="text-muted-foreground">A carregar leitor PDF…</p>
+      </div>
+    ),
+  }
+);
 
 interface ReaderShellProps {
   bookId: string;

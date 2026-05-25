@@ -63,7 +63,12 @@ export function PerfilPageClient() {
       ]);
 
       setProfile(profileRes.data);
-      setReadingHistory(historyRes.data ?? []);
+      const history = (historyRes.data ?? []).map((row) => {
+        const book = row.book;
+        const bookObj = Array.isArray(book) ? book[0] ?? null : book ?? null;
+        return { ...row, book: bookObj };
+      });
+      setReadingHistory(history);
       setStats((s) => ({
         ...s,
         favoritesCount: favoritesRes.count ?? 0,

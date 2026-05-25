@@ -15,7 +15,7 @@ export function useUser() {
     async (userId: string) => {
       const { data } = await supabase
         .from("profiles")
-        .select("id, email, full_name, avatar_url, phone, role, is_blocked, created_at")
+        .select("id, email, full_name, avatar_url, phone, role, is_blocked, created_at, updated_at")
         .eq("id", userId)
         .single();
       setProfile(data);

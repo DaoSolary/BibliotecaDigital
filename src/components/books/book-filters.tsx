@@ -20,7 +20,7 @@ interface BookFiltersProps {
 export function BookFilters({ categories }: BookFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const updateParam = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
