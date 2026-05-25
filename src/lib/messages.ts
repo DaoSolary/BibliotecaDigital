@@ -26,6 +26,8 @@ export function traduzirErro(mensagem: string): string {
     "Refresh Token Not Found": "Sessão expirada. Faça login novamente.",
     "User not found": "Utilizador não encontrado.",
     "Email link is invalid or has expired": "O link expirou. Peça um novo e-mail de recuperação.",
+    "over_request_rate_limit": "Muitas tentativas. Aguarde alguns minutos e tente novamente.",
+    "Request rate limit reached": "Limite de pedidos atingido. Aguarde alguns minutos.",
   };
 
   const exato = mapa[mensagem];

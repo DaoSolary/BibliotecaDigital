@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { obterSessaoCliente } from "@/lib/supabase/auth-client";
 import { Star } from "lucide-react";
 import { toast } from "sonner";
 import { addRating } from "@/lib/actions/books";
@@ -18,12 +19,12 @@ export function RatingForm({ bookId, currentRating = 0 }: RatingFormProps) {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) return;
+    obterSessaoCliente(supabase).then(async (session) => {
+      if (!session?.user) return;
       const { data } = await supabase
         .from("ratings")
         .select("score")
-        .eq("user_id", user.id)
+        .eq("user_id", session.user.id)
         .eq("book_id", bookId)
         .maybeSingle();
       if (data?.score) setSelected(data.score);

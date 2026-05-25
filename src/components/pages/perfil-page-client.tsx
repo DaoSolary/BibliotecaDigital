@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { ProfileView } from "@/components/profile/profile-view";
 import { createClient } from "@/lib/supabase/client";
+import { obterSessaoCliente } from "@/lib/supabase/auth-client";
 import type { Profile } from "@/types/database";
 import type { ReadingListSlug } from "@/types/reading";
 
@@ -33,12 +34,12 @@ export function PerfilPageClient() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) {
+    obterSessaoCliente(supabase).then(async (session) => {
+      if (!session?.user) {
         router.replace("/auth/login?redirect=/perfil");
         return;
       }
-      const userId = user.id;
+      const userId = session.user.id;
 
       const [
         profileRes,

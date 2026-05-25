@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { createClient } from "@/lib/supabase/client";
+import { obterSessaoCliente } from "@/lib/supabase/auth-client";
 import { traduzirErro } from "@/lib/messages";
 
 interface AddToListProps {
@@ -24,15 +25,15 @@ export function AddToList({ bookId }: AddToListProps) {
 
   const loadLists = async () => {
     if (loaded) return;
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    const session = await obterSessaoCliente(supabase);
+    if (!session?.user) {
       toast.error("Faça login para usar listas");
       return;
     }
     const { data } = await supabase
       .from("reading_lists")
       .select("id, name")
-      .eq("user_id", user.id);
+      .eq("user_id", session.user.id);
     setLists(data ?? []);
     setLoaded(true);
   };

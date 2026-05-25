@@ -6,6 +6,7 @@ import { BookFilters } from "@/components/books/book-filters";
 import { CatalogGrid } from "@/components/livros/catalog-grid";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
+import { obterSessaoCliente } from "@/lib/supabase/auth-client";
 import type { Book, Category } from "@/types/database";
 import type { ReadingListSlug } from "@/types/reading";
 
@@ -25,11 +26,11 @@ export function CatalogPageClient() {
 
     Promise.all([
       fetch(`/api/books/catalog?${qs}`).then((r) => r.json()),
-      supabase.auth.getUser(),
-    ]).then(async ([catalog, userRes]) => {
+      obterSessaoCliente(supabase),
+    ]).then(async ([catalog, session]) => {
       setBooks(catalog.books ?? []);
       setCategories(catalog.categories ?? []);
-      const user = userRes.data.user;
+      const user = session?.user;
       setIsLoggedIn(!!user);
 
       if (user) {

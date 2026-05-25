@@ -8,6 +8,7 @@ import { BookOpen, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
+import { obterSessaoCliente } from "@/lib/supabase/auth-client";
 
 interface ListItem {
   id: string;
@@ -28,8 +29,8 @@ export function ListasPageClient() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) {
+    obterSessaoCliente(supabase).then(async (session) => {
+      if (!session?.user) {
         router.replace("/auth/login?redirect=/listas");
         return;
       }
@@ -38,7 +39,7 @@ export function ListasPageClient() {
         .select(
           `*, items:reading_list_items(id, book:books(id, title, author, cover_url))`
         )
-        .eq("user_id", user.id)
+        .eq("user_id", session.user.id)
         .order("created_at");
       setLists(data ?? []);
       setLoading(false);

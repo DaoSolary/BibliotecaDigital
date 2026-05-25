@@ -5,14 +5,10 @@ export async function middleware(request: NextRequest) {
   return await updateSession(request);
 }
 
-/** Auth (/auth/*) fica fora do middleware para login/registo renderizarem de imediato */
+/**
+ * Só /admin e /ler no middleware (1× getUser por pedido).
+ * /perfil, /favoritos, /listas e /notificacoes validam sessão no cliente (evita 429).
+ */
 export const config = {
-  matcher: [
-    "/perfil/:path*",
-    "/ler/:path*",
-    "/favoritos/:path*",
-    "/listas/:path*",
-    "/notificacoes/:path*",
-    "/admin/:path*",
-  ],
+  matcher: ["/admin/:path*", "/ler/:path*"],
 };

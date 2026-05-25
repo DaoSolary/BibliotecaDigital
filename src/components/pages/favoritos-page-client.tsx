@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { BookCard } from "@/components/books/book-card";
 import { createClient } from "@/lib/supabase/client";
+import { obterSessaoCliente } from "@/lib/supabase/auth-client";
 import type { Book } from "@/types/database";
 
 export function FavoritosPageClient() {
@@ -14,15 +15,15 @@ export function FavoritosPageClient() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) {
+    obterSessaoCliente(supabase).then(async (session) => {
+      if (!session?.user) {
         router.replace("/auth/login?redirect=/favoritos");
         return;
       }
       const { data } = await supabase
         .from("favorites")
         .select("*, book:books(*, category:categories(*))")
-        .eq("user_id", user.id)
+        .eq("user_id", session.user.id)
         .order("created_at", { ascending: false });
       setBooks(
         (data?.map((f) => ({ ...f.book, is_favorite: true })).filter(Boolean) as Book[]) ?? []

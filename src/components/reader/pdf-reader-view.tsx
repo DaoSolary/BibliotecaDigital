@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { saveReadingProgress } from "@/lib/actions/books";
 import { createClient } from "@/lib/supabase/client";
+import { obterSessaoCliente } from "@/lib/supabase/auth-client";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -54,14 +55,15 @@ export function PdfReader({
   }, [initialPage]);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUserId(user?.id ?? null);
-      if (!user) return;
+    obterSessaoCliente(supabase).then((session) => {
+      const uid = session?.user?.id ?? null;
+      setUserId(uid);
+      if (!uid) return;
       supabase
         .from("page_bookmarks")
         .select("page_number")
         .eq("book_id", bookId)
-        .eq("user_id", user.id)
+        .eq("user_id", uid)
         .then(({ data }) => setBookmarks(data?.map((b) => b.page_number) ?? []));
     });
   }, [bookId, supabase]);

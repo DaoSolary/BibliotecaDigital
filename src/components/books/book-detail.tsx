@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { obterSessaoCliente } from "@/lib/supabase/auth-client";
 import { getBookReadingStatus } from "@/lib/actions/reading";
 import {
   BookOpen,
@@ -44,14 +45,14 @@ export function BookDetail({
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) {
+    obterSessaoCliente(supabase).then(async (session) => {
+      if (!session?.user) {
         setLoggedIn(false);
         return;
       }
       setLoggedIn(true);
       const [{ data: fav }, status] = await Promise.all([
-        supabase.from("favorites").select("id").eq("user_id", user.id).eq("book_id", book.id).maybeSingle(),
+        supabase.from("favorites").select("id").eq("user_id", session.user.id).eq("book_id", book.id).maybeSingle(),
         getBookReadingStatus(book.id),
       ]);
       setFavorited(!!fav);

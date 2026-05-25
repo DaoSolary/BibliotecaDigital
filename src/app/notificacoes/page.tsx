@@ -5,6 +5,7 @@ import { Bell, BookOpen, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
+import { obterSessaoCliente } from "@/lib/supabase/auth-client";
 import { formatDate } from "@/lib/utils";
 import type { Notification } from "@/types/database";
 import Link from "next/link";
@@ -15,12 +16,12 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     const load = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      const session = await obterSessaoCliente(supabase);
+      if (!session?.user) return;
       const { data } = await supabase
         .from("notifications")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", session.user.id)
         .order("created_at", { ascending: false });
       setNotifications(data ?? []);
     };
@@ -28,9 +29,9 @@ export default function NotificationsPage() {
   }, [supabase]);
 
   const markAllRead = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    await supabase.from("notifications").update({ is_read: true }).eq("user_id", user.id);
+    const session = await obterSessaoCliente(supabase);
+    if (!session?.user) return;
+    await supabase.from("notifications").update({ is_read: true }).eq("user_id", session.user.id);
     setNotifications((n) => n.map((item) => ({ ...item, is_read: true })));
   };
 

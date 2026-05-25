@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/card";
 import { resetPassword } from "@/lib/actions/auth";
 import { createClient } from "@/lib/supabase/client";
+import { obterSessaoCliente } from "@/lib/supabase/auth-client";
 import { traduzirErro } from "@/lib/messages";
 
 type AuthMode = "login" | "register" | "forgot";
@@ -40,6 +41,11 @@ export function AuthForm({ mode }: AuthFormProps) {
         msg ? traduzirErro(decodeURIComponent(msg)) : "Link de confirmação inválido ou expirado."
       );
     }
+    if (erro === "rate_limit") {
+      toast.error(
+        "Muitas tentativas de autenticação. Aguarde alguns minutos e entre novamente."
+      );
+    }
   }, [searchParams]);
 
   useEffect(() => {
@@ -49,9 +55,9 @@ export function AuthForm({ mode }: AuthFormProps) {
     }
 
     let ativo = true;
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    obterSessaoCliente(supabase).then((session) => {
       if (!ativo) return;
-      if (user) {
+      if (session?.user) {
         const redirect = searchParams.get("redirect") || "/";
         router.replace(redirect);
         return;

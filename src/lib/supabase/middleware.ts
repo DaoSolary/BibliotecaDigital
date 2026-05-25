@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { SupabaseCookie } from "@/lib/supabase/cookie-types";
+import { getSupabaseAnonKey, getSupabaseUrl, hasSupabaseEnv } from "@/lib/supabase/env";
 
 function copiarCookies(origem: NextResponse, destino: NextResponse) {
   origem.cookies.getAll().forEach((cookie) => {
@@ -14,6 +15,14 @@ function redirecionar(url: URL, respostaBase: NextResponse) {
   return redirect;
 }
 
+function limparCookiesAuth(resposta: NextResponse, request: NextRequest) {
+  request.cookies.getAll().forEach((cookie) => {
+    if (cookie.name.startsWith("sb-") || cookie.name.includes("auth-token")) {
+      resposta.cookies.delete(cookie.name);
+    }
+  });
+}
+
 function temCookieSessao(request: NextRequest) {
   return request.cookies
     .getAll()
@@ -23,22 +32,15 @@ function temCookieSessao(request: NextRequest) {
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) {
+  if (!hasSupabaseEnv()) {
     return response;
   }
 
   const pathname = request.nextUrl.pathname;
   const isAdminRoute = pathname.startsWith("/admin");
-  const isProtectedRoute =
-    pathname.startsWith("/perfil") ||
-    pathname.startsWith("/ler") ||
-    pathname.startsWith("/favoritos") ||
-    pathname.startsWith("/listas") ||
-    pathname.startsWith("/notificacoes");
+  const isReaderRoute = pathname.startsWith("/ler");
 
-  if (!isProtectedRoute && !isAdminRoute) {
+  if (!isAdminRoute && !isReaderRoute) {
     return response;
   }
 
@@ -49,7 +51,7 @@ export async function updateSession(request: NextRequest) {
     return redirecionar(login, response);
   }
 
-  const supabase = createServerClient(url, key, {
+  const supabase = createServerClient(getSupabaseUrl(), getSupabaseAnonKey(), {
     cookies: {
       getAll() {
         return request.cookies.getAll();
@@ -67,9 +69,26 @@ export async function updateSession(request: NextRequest) {
   try {
     const {
       data: { user },
+      error,
     } = await supabase.auth.getUser();
 
+    const rateLimited =
+      error &&
+      (error.status === 429 ||
+        error.message?.toLowerCase().includes("rate limit") ||
+        error.message?.toLowerCase().includes("too many"));
+
+    if (rateLimited) {
+      limparCookiesAuth(response, request);
+      const login = request.nextUrl.clone();
+      login.pathname = "/auth/login";
+      login.searchParams.set("redirect", pathname);
+      login.searchParams.set("erro", "rate_limit");
+      return redirecionar(login, response);
+    }
+
     if (!user) {
+      limparCookiesAuth(response, request);
       const login = request.nextUrl.clone();
       login.pathname = "/auth/login";
       login.searchParams.set("redirect", pathname);
@@ -90,7 +109,6 @@ export async function updateSession(request: NextRequest) {
       }
     }
   } catch {
-    // Rede instável: não redirecionar para login com cookies válidos presentes
     return response;
   }
 

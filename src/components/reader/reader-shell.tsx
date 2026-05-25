@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { obterSessaoCliente } from "@/lib/supabase/auth-client";
 
 const PdfReader = dynamic(
   () => import("@/components/reader/pdf-reader-view").then((m) => m.PdfReader),
@@ -45,11 +46,9 @@ export function ReaderShell({ bookId }: ReaderShellProps) {
 
     async function load() {
       const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const session = await obterSessaoCliente(supabase);
 
-      if (!user) {
+      if (!session?.user) {
         router.replace(`/auth/login?redirect=/ler/${bookId}`);
         return;
       }
